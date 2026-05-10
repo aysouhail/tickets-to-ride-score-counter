@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ticket to Ride — Score Counter</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #1a2129;
+    --panel-2: #232c37;
+    --border: #2f3a47;
+    --text: #e8ecef;
+    --muted: #8a96a3;
+    --accent: #d4a017;
+    --accent-2: #e8b827;
+    --danger: #c94a4a;
+    --success: #4caf50;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(212, 160, 23, 0.08), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(74, 144, 226, 0.06), transparent 50%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  }
+
+  .brand h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .brand p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  button, .btn {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  button:hover {
+    background: #2c3744;
+    border-color: #3d4856;
+  }
+
+  button:active {
+    transform: translateY(1px);
+  }
+
+  button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #1a1a1a;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+  }
+
+  .btn-danger {
+    background: transparent;
+    border-color: rgba(201, 74, 74, 0.4);
+    color: #e08585;
+  }
+  .btn-danger:hover {
+    background: rgba(201, 74, 74, 0.15);
+    border-color: var(--danger);
+  }
+
+  .btn-ghost {
+    background: transparent;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- Setup screen ---------- */
+  .setup h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .setup .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .player-count {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .player-count label {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .stepper button {
+    border: none;
+    background: transparent;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    border-radius: 0;
+  }
+
+  .stepper .value {
+    width: 56px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .player-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+
+  .color-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .player-row input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    min-width: 0;
+  }
+
+  .color-popover {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 24px);
+    gap: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+
+  .color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+  }
+  .color-swatch:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ---------- Game screen ---------- */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .player-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .player-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--player-color, #888);
+  }
+
+  .player-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .player-card .pc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .pc-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pc-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pc-name {
+    font-size: 16px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pc-rank {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel-2);
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+
+  .pc-rank.gold {
+    color: #ffd86b;
+    border-color: rgba(255, 216, 107, 0.4);
+    background: rgba(255, 216, 107, 0.08);
+  }
+
+  .pc-score {
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -1px;
+  }
+
+  .pc-score-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pc-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .pc-stats span strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .add-hint {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px;
+    background: var(--panel-2);
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+
+  /* ---------- History ---------- */
+  .history-section {
+    margin-top: 24px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .section-title h3 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .history-list {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .history-item:last-child {
+    border-bottom: none;
+  }
+
+  .history-item .h-num {
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-item .h-player {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .history-item .h-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .history-item .h-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-item .h-carriages {
+    color: var(--muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-item .h-points {
+    font-weight: 600;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-item .h-delete {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 4px 8px;
+    font-size: 14px;
+    border-radius: 6px;
+  }
+  .history-item .h-delete:hover {
+    color: var(--danger);
+    background: rgba(201, 74, 74, 0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 32px 16px;
+    font-size: 14px;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    animation: fadeIn 0.15s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    animation: slideUp 0.2s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .modal .modal-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .modal .modal-player {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .modal .modal-player .pc-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .carriage-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .carriage-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s ease;
+  }
+
+  .carriage-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .carriage-btn.selected {
+    background: rgba(212, 160, 23, 0.15);
+    border-color: var(--accent);
+  }
+
+  .carriage-btn .c-num {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .carriage-btn .c-pts {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .carriage-btn.selected .c-pts {
+    color: var(--accent);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* ---------- Stations row ---------- */
+  .pc-extras {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stations-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .stations-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 11px;
+  }
+
+  .station-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .station-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--panel-2);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    color: transparent;
+    transition: all 0.12s ease;
+  }
+  .station-dot:hover {
+    border-color: var(--accent);
+  }
+  .station-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1a1a1a;
+  }
+
+  .stations-points {
+    margin-left: auto;
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+  }
+
+  .longest-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #ffd86b;
+    background: rgba(255, 216, 107, 0.1);
+    border: 1px solid rgba(255, 216, 107, 0.3);
+    border-radius: 6px;
+    padding: 4px 8px;
+    align-self: flex-start;
+  }
+
+  /* ---------- Tickets summary on card ---------- */
+  .tickets-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .tickets-row:hover {
+    border-color: var(--accent);
+  }
+
+  .tickets-row .tickets-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tickets-row .tickets-count {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .tickets-row .tickets-net {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tickets-row .tickets-net.positive { color: var(--accent); }
+  .tickets-row .tickets-net.negative { color: #e08585; }
+  .tickets-row .tickets-net.zero { color: var(--muted); }
+
+  /* ---------- Tickets modal ---------- */
+  .ticket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 2px;
+  }
+
+  .ticket-row {
+    display: grid;
+    grid-template-columns: 24px 80px 1fr 32px;
+    gap: 10px;
+    align-items: center;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+
+  .ticket-row .ticket-num {
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .ticket-row input[type="number"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 6px;
+    padding: 6px 8px;
+    width: 100%;
+    outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .ticket-row input[type="number"]::-webkit-outer-spin-button,
+  .ticket-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+  }
+  .ticket-row input[type="number"]:focus {
+    border-color: var(--accent);
+  }
+
+  .ticket-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    transition: all 0.15s ease;
+  }
+  .ticket-toggle input {
+    display: none;
+  }
+  .ticket-toggle.completed {
+    color: var(--success);
+    border-color: rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 0.08);
+  }
+  .ticket-toggle.failed {
+    color: #e08585;
+    border-color: rgba(201, 74, 74, 0.4);
+    background: rgba(201, 74, 74, 0.08);
+  }
+
+  .ticket-delete {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    padding: 4px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  .ticket-delete:hover {
+    color: var(--danger);
+    background: rgba(201, 74, 74, 0.1);
+  }
+
+  .ticket-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 18px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .ticket-add-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--text);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .ticket-add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .ticket-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .ticket-summary .ticket-net {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .ticket-summary .ticket-net.positive { color: var(--accent); }
+  .ticket-summary .ticket-net.negative { color: #e08585; }
+  .ticket-summary .ticket-net.zero { color: var(--muted); }
+
+  /* ---------- Longest road panel ---------- */
+  .bonus-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .bonus-panel .bonus-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .bonus-panel .bonus-icon {
+    font-size: 18px;
+  }
+
+  .bonus-panel select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    min-width: 180px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .bonus-panel select:hover,
+  .bonus-panel select:focus {
+    border-color: var(--accent);
+  }
+
+  .bonus-panel .bonus-pts {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bonus-panel .bonus-hint {
+    color: var(--muted);
+    font-size: 12px;
+    margin-left: auto;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+    z-index: 2000;
+    animation: toastIn 0.2s ease, toastOut 0.3s ease 2s forwards;
+    pointer-events: none;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translate(-50%, 12px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+  @keyframes toastOut {
+    to { opacity: 0; transform: translate(-50%, -8px); }
+  }
+
+  /* ---------- Scoring reference ---------- */
+  .scoring-ref {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .scoring-ref strong {
+    color: var(--accent);
+  }
+
+  .scoring-ref .ref-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-top: 8px;
+    color: var(--muted);
+  }
+
+  .scoring-ref .ref-row span {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 480px) {
+    .app { padding: 16px 14px 80px; }
+    .panel { padding: 18px; }
+    .pc-score { font-size: 36px; }
+    .carriage-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="brand-icon">🚂</div>
+        <div>
+          <h1>Ticket to Ride</h1>
+          <p>Score Counter</p>
+        </div>
+      </div>
+      <div class="top-actions" id="topActions"></div>
+    </header>
+
+    <main id="main"></main>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot"></div>
+
+<script>
+  // ---------- Scoring table ----------
+  // 1=1, 2=2, 3=4, 4=7, 5=10, 6=15, 7=18, 8=21
+  // (User specified "9=21" which appears to be a typo for 8=21 — standard TtR)
+  const SCORE_TABLE = {
+    1: 1,
+    2: 2,
+    3: 4,
+    4: 7,
+    5: 10,
+    6: 15,
+    7: 18,
+    8: 21,
+  };
+
+  const PLAYER_COLORS = [
+    "#e74c3c", // red
+    "#3498db", // blue
+    "#27ae60", // green
+    "#f1c40f", // yellow
+    "#1a1a1a", // black
+    "#ecf0f1", // white
+    "#9b59b6", // purple
+    "#e67e22", // orange
+    "#16a085", // teal
+    "#ec7ab8", // pink
+  ];
+
+  const STORAGE_KEY = "ttr-counter-state-v1";
+
+  // ---------- State ----------
+  let state = loadState() || createInitialState();
+
+  const MAX_STATIONS = 3;
+  const STATION_POINTS = 4;
+  const LONGEST_ROAD_BONUS = 10;
+
+  function createInitialState() {
+    return {
+      phase: "setup", // 'setup' | 'game'
+      players: defaultPlayers(2),
+      history: [], // { id, playerId, carriages, points, ts }
+      longestRoadPlayerId: null,
+    };
+  }
+
+  function defaultPlayers(count) {
+    return Array.from({ length: count }, (_, i) => ({
+      id: cryptoId(),
+      name: `Player ${i + 1}`,
+      color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+      stations: 0,
+      tickets: [],
+    }));
+  }
+
+  function cryptoId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      // storage may be unavailable; ignore
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.phase) return null;
+      // Migrations for older saved games
+      if (parsed.longestRoadPlayerId === undefined) {
+        parsed.longestRoadPlayerId = null;
+      }
+      if (Array.isArray(parsed.players)) {
+        parsed.players.forEach((p) => {
+          if (typeof p.stations !== "number") p.stations = 0;
+          if (!Array.isArray(p.tickets)) p.tickets = [];
+        });
+      }
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function resetState() {
+    state = createInitialState();
+    saveState();
+    render();
+  }
+
+  // ---------- Helpers ----------
+  function getPlayerScore(playerId) {
+    const breakdown = getScoreBreakdown(playerId);
+    return breakdown.total;
+  }
+
+  function getScoreBreakdown(playerId) {
+    const player = state.players.find((p) => p.id === playerId);
+    const turns = state.history
+      .filter((h) => h.playerId === playerId)
+      .reduce((sum, h) => sum + h.points, 0);
+    const stations = (player ? player.stations : 0) * STATION_POINTS;
+    const longestRoad =
+      state.longestRoadPlayerId === playerId ? LONGEST_ROAD_BONUS : 0;
+    const tickets = computeTicketTotal(player);
+    return {
+      turns,
+      stations,
+      longestRoad,
+      tickets,
+      total: turns + stations + longestRoad + tickets,
+    };
+  }
+
+  function computeTicketTotal(player) {
+    if (!player || !Array.isArray(player.tickets)) return 0;
+    return player.tickets.reduce(
+      (sum, t) => sum + (t.completed ? t.points : -t.points),
+      0
+    );
+  }
+
+  function getPlayerTurns(playerId) {
+    return state.history.filter((h) => h.playerId === playerId);
+  }
+
+  function getRankings() {
+    const scores = state.players.map((p) => ({
+      id: p.id,
+      score: getPlayerScore(p.id),
+    }));
+    const sorted = [...scores].sort((a, b) => b.score - a.score);
+    const ranks = {};
+    sorted.forEach((s, idx) => {
+      ranks[s.id] = idx + 1;
+    });
+    return ranks;
+  }
+
+  // ---------- Rendering ----------
+  const main = document.getElementById("main");
+  const topActions = document.getElementById("topActions");
+  const modalRoot = document.getElementById("modalRoot");
+  const toastRoot = document.getElementById("toastRoot");
+
+  function render() {
+    if (state.phase === "setup") {
+      renderSetup();
+    } else {
+      renderGame();
+    }
+    saveState();
+  }
+
+  // --- Setup screen ---
+  function renderSetup() {
+    topActions.innerHTML = "";
+    main.innerHTML = `
+      <section class="panel setup">
+        <h2>New Game</h2>
+        <p class="subtitle">Choose how many players (2–10) and customize names.</p>
+
+        <div class="player-count">
+          <label>Players:</label>
+          <div class="stepper">
+            <button id="decPlayers" aria-label="Remove player">−</button>
+            <div class="value" id="playerCount">${state.players.length}</div>
+            <button id="incPlayers" aria-label="Add player">+</button>
+          </div>
+        </div>
+
+        <div class="player-list" id="playerList"></div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-primary" id="startBtn">Start Game →</button>
+        </div>
+
+        <div class="scoring-ref">
+          <strong>Carriage scoring</strong>
+          <div class="ref-row">
+            ${Object.entries(SCORE_TABLE)
+              .map(([n, p]) => `<span>${n} → ${p} pts</span>`)
+              .join("")}
+          </div>
+          <div class="ref-row" style="margin-top:6px">
+            <span>🏛 Station = ${STATION_POINTS} pts (max ${MAX_STATIONS})</span>
+            <span>🛤️ Longest Road = +${LONGEST_ROAD_BONUS} pts</span>
+            <span>🎫 Ticket = ±custom pts (end of game)</span>
+          </div>
+        </div>
+      </section>
+    `;
+
+    document.getElementById("decPlayers").onclick = () => {
+      if (state.players.length > 2) {
+        const removed = state.players.pop();
+        // Clean up references to the removed player
+        state.history = state.history.filter((h) => h.playerId !== removed.id);
+        if (state.longestRoadPlayerId === removed.id) {
+          state.longestRoadPlayerId = null;
+        }
+        render();
+      }
+    };
+    document.getElementById("incPlayers").onclick = () => {
+      if (state.players.length < 10) {
+        const i = state.players.length;
+        state.players.push({
+          id: cryptoId(),
+          name: `Player ${i + 1}`,
+          color: PLAYER_COLORS[i % PLAYER_COLORS.length],
+          stations: 0,
+          tickets: [],
+        });
+        render();
+      }
+    };
+
+    document.getElementById("startBtn").onclick = () => {
+      state.phase = "game";
+      render();
+    };
+
+    renderPlayerList();
+  }
+
+  function renderPlayerList() {
+    const list = document.getElementById("playerList");
+    list.innerHTML = state.players
+      .map(
+        (p, idx) => `
+        <div class="player-row" data-id="${p.id}">
+          <div class="color-dot" style="background:${p.color}" data-color-trigger="${p.id}"></div>
+          <input type="text" value="${escapeHtml(p.name)}" data-name-input="${p.id}" maxlength="20" />
+        </div>
+      `
+      )
+      .join("");
+
+    list.querySelectorAll("[data-name-input]").forEach((input) => {
+      input.addEventListener("input", (e) => {
+        const id = e.target.dataset.nameInput;
+        const player = state.players.find((p) => p.id === id);
+        if (player) {
+          player.name = e.target.value;
+          saveState();
+        }
+      });
+    });
+
+    list.querySelectorAll("[data-color-trigger]").forEach((dot) => {
+      dot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openColorPopover(dot, dot.dataset.colorTrigger);
+      });
+    });
+  }
+
+  function openColorPopover(anchor, playerId) {
+    document.querySelectorAll(".color-popover").forEach((el) => el.remove());
+
+    const pop = document.createElement("div");
+    pop.className = "color-popover";
+    PLAYER_COLORS.forEach((c) => {
+      const sw = document.createElement("div");
+      sw.className = "color-swatch";
+      sw.style.background = c;
+      sw.onclick = (e) => {
+        e.stopPropagation();
+        const player = state.players.find((p) => p.id === playerId);
+        if (player) {
+          player.color = c;
+          render();
+        }
+      };
+      pop.appendChild(sw);
+    });
+    anchor.appendChild(pop);
+
+    const closer = (e) => {
+      if (!pop.contains(e.target) && e.target !== anchor) {
+        pop.remove();
+        document.removeEventListener("click", closer);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", closer), 0);
+  }
+
+  // --- Game screen ---
+  function renderGame() {
+    topActions.innerHTML = `
+      <button class="btn-ghost" id="undoBtn" ${
+        state.history.length === 0 ? "disabled" : ""
+      }>↶ Undo</button>
+      <button class="btn-ghost" id="editPlayersBtn">Edit Players</button>
+      <button class="btn-danger" id="newGameBtn">New Game</button>
+    `;
+
+    document.getElementById("undoBtn").onclick = undoLastTurn;
+    document.getElementById("editPlayersBtn").onclick = () => {
+      state.phase = "setup";
+      render();
+    };
+    document.getElementById("newGameBtn").onclick = () => {
+      if (
+        state.history.length === 0 ||
+        confirm("Start a new game? Current scores will be lost.")
+      ) {
+        resetState();
+      }
+    };
+
+    const ranks = getRankings();
+
+    main.innerHTML = `
+      <section class="bonus-panel">
+        <div class="bonus-label">
+          <span class="bonus-icon">🛤️</span>
+          <span>Longest Road</span>
+        </div>
+        <select id="longestRoadSelect">
+          <option value="">— None —</option>
+          ${state.players
+            .map(
+              (p) => `
+            <option value="${p.id}" ${
+                state.longestRoadPlayerId === p.id ? "selected" : ""
+              }>${escapeHtml(p.name)}</option>
+          `
+            )
+            .join("")}
+        </select>
+        <span class="bonus-pts">+${LONGEST_ROAD_BONUS} pts</span>
+        <span class="bonus-hint">Awarded once at game end</span>
+      </section>
+
+      <section class="scoreboard">
+        ${state.players
+          .map((p) => renderPlayerCard(p, ranks[p.id]))
+          .join("")}
+      </section>
+
+      <section class="history-section">
+        <div class="section-title">
+          <h3>Turn history</h3>
+          ${
+            state.history.length > 0
+              ? `<span style="font-size:12px;color:var(--muted)">${state.history.length} turn${
+                  state.history.length === 1 ? "" : "s"
+                }</span>`
+              : ""
+          }
+        </div>
+        <div class="history-list">
+          ${
+            state.history.length === 0
+              ? `<div class="empty-state">No turns yet. Tap a player card above to add a turn.</div>`
+              : [...state.history]
+                  .reverse()
+                  .map((h, i) => renderHistoryItem(h, state.history.length - i))
+                  .join("")
+          }
+        </div>
+      </section>
+    `;
+
+    document.querySelectorAll("[data-player-card]").forEach((card) => {
+      card.addEventListener("click", () => {
+        openTurnModal(card.dataset.playerCard);
+      });
+    });
+
+    document.querySelectorAll("[data-delete-turn]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.deleteTurn;
+        deleteTurn(id);
+      });
+    });
+
+    document.querySelectorAll("[data-station-toggle]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const playerId = btn.dataset.playerId;
+        const idx = parseInt(btn.dataset.stationToggle, 10);
+        toggleStation(playerId, idx);
+      });
+    });
+
+    document.querySelectorAll("[data-tickets-button]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openTicketsModal(btn.dataset.ticketsButton);
+      });
+    });
+
+    const lrSelect = document.getElementById("longestRoadSelect");
+    if (lrSelect) {
+      lrSelect.addEventListener("change", (e) => {
+        setLongestRoad(e.target.value || null);
+      });
+    }
+  }
+
+  function renderPlayerCard(p, rank) {
+    const breakdown = getScoreBreakdown(p.id);
+    const score = breakdown.total;
+    const turns = getPlayerTurns(p.id);
+    const carriages = turns.reduce((s, t) => s + t.carriages, 0);
+    const lastTurn = turns[turns.length - 1];
+    const hasLongestRoad = state.longestRoadPlayerId === p.id;
+
+    const totalScored =
+      breakdown.total !== 0 ||
+      turns.length > 0 ||
+      p.stations > 0 ||
+      hasLongestRoad;
+
+    const rankBadge =
+      rank === 1 && totalScored
+        ? `<div class="pc-rank gold">🏆 1st</div>`
+        : `<div class="pc-rank">#${rank}</div>`;
+
+    const stationDots = Array.from({ length: MAX_STATIONS }, (_, i) => {
+      const filled = i < p.stations;
+      return `<button class="station-dot ${
+        filled ? "active" : ""
+      }" data-station-toggle="${i}" data-player-id="${p.id}" aria-label="Station ${i + 1}">${
+        filled ? "🏛" : ""
+      }</button>`;
+    }).join("");
+
+    return `
+      <div class="player-card" data-player-card="${p.id}" style="--player-color:${p.color}">
+        <div class="pc-header">
+          <div class="pc-name-row">
+            <div class="pc-color" style="background:${p.color}"></div>
+            <div class="pc-name">${escapeHtml(p.name)}</div>
+          </div>
+          ${rankBadge}
+        </div>
+        <div class="pc-score">${score}</div>
+        <div class="pc-score-label">points</div>
+        <div class="pc-stats">
+          <span><strong>${turns.length}</strong> turn${turns.length === 1 ? "" : "s"}</span>
+          <span><strong>${carriages}</strong> carriage${carriages === 1 ? "" : "s"}</span>
+          ${
+            lastTurn
+              ? `<span style="margin-left:auto">Last: <strong>+${lastTurn.points}</strong></span>`
+              : ""
+          }
+        </div>
+        <div class="pc-extras">
+          <div class="stations-row">
+            <span class="stations-label">Stations</span>
+            <div class="station-dots">${stationDots}</div>
+            <span class="stations-points">${
+              p.stations > 0 ? `+${breakdown.stations}` : ""
+            }</span>
+          </div>
+          ${
+            hasLongestRoad
+              ? `<div class="longest-badge">🛤️ Longest Road +${LONGEST_ROAD_BONUS}</div>`
+              : ""
+          }
+          <button class="tickets-row" data-tickets-button="${p.id}">
+            <span class="tickets-label">
+              <span>🎫 Tickets</span>
+              <span class="tickets-count">(${p.tickets.length})</span>
+            </span>
+            <span class="tickets-net ${
+              breakdown.tickets > 0
+                ? "positive"
+                : breakdown.tickets < 0
+                ? "negative"
+                : "zero"
+            }">${
+      breakdown.tickets === 0
+        ? p.tickets.length === 0
+          ? "Add"
+          : "0"
+        : (breakdown.tickets > 0 ? "+" : "") + breakdown.tickets
+    }</span>
+          </button>
+        </div>
+        <div class="add-hint">Tap card to add a turn</div>
+      </div>
+    `;
+  }
+
+  function renderHistoryItem(h, displayNum) {
+    const player = state.players.find((p) => p.id === h.playerId);
+    if (!player) return "";
+    return `
+      <div class="history-item">
+        <div class="h-num">#${displayNum}</div>
+        <div class="h-player">
+          <div class="h-dot" style="background:${player.color}"></div>
+          <div class="h-name">${escapeHtml(player.name)}</div>
+        </div>
+        <div class="h-carriages">${h.carriages} 🚃</div>
+        <div class="h-points">+${h.points}</div>
+        <button class="h-delete" data-delete-turn="${h.id}" aria-label="Delete turn">✕</button>
+      </div>
+    `;
+  }
+
+  // ---------- Modal ----------
+  function openTurnModal(playerId) {
+    const player = state.players.find((p) => p.id === playerId);
+    if (!player) return;
+
+    let selected = null;
+
+    const html = `
+      <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal">
+          <div class="modal-player">
+            <div class="pc-color" style="background:${player.color}"></div>
+            <h3>${escapeHtml(player.name)}</h3>
+          </div>
+          <p class="modal-sub">How many carriages this turn?</p>
+
+          <div class="carriage-grid" id="carriageGrid">
+            ${Object.entries(SCORE_TABLE)
+              .map(
+                ([n, p]) => `
+              <div class="carriage-btn" data-carriages="${n}">
+                <div class="c-num">${n}</div>
+                <div class="c-pts">+${p} pts</div>
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+
+          <div class="modal-actions">
+            <button id="modalCancel">Cancel</button>
+            <button class="btn-primary" id="modalConfirm" disabled>Add turn</button>
+          </div>
+        </div>
+      </div>
+    `;
+    modalRoot.innerHTML = html;
+
+    const grid = document.getElementById("carriageGrid");
+    const confirmBtn = document.getElementById("modalConfirm");
+
+    grid.querySelectorAll(".carriage-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        grid.querySelectorAll(".carriage-btn").forEach((b) =>
+          b.classList.remove("selected")
+        );
+        btn.classList.add("selected");
+        selected = parseInt(btn.dataset.carriages, 10);
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = `Add +${SCORE_TABLE[selected]} pts`;
+      });
+    });
+
+    const close = () => {
+      modalRoot.innerHTML = "";
+    };
+
+    document.getElementById("modalCancel").onclick = close;
+    document.getElementById("modalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "modalBackdrop") close();
+    });
+
+    confirmBtn.onclick = () => {
+      if (selected == null) return;
+      addTurn(playerId, selected);
+      close();
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        close();
+        document.removeEventListener("keydown", onKey);
+      } else if (e.key >= "1" && e.key <= "8") {
+        const target = grid.querySelector(`[data-carriages="${e.key}"]`);
+        if (target) target.click();
+      } else if (e.key === "Enter" && !confirmBtn.disabled) {
+        confirmBtn.click();
+        document.removeEventListener("keydown", onKey);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+  }
+
+  // ---------- Tickets modal ----------
+  function openTicketsModal(playerId) {
+    const player = state.players.find((p) => p.id === playerId);
+    if (!player) return;
+    if (!Array.isArray(player.tickets)) player.tickets = [];
+
+    let onKey = null;
+
+    const close = () => {
+      modalRoot.innerHTML = "";
+      if (onKey) document.removeEventListener("keydown", onKey);
+      render(); // refresh main scoreboard
+    };
+
+    const renderModal = () => {
+      const total = computeTicketTotal(player);
+      const totalClass =
+        total > 0 ? "positive" : total < 0 ? "negative" : "zero";
+      const totalLabel = `${total > 0 ? "+" : ""}${total} pts`;
+
+      modalRoot.innerHTML = `
+        <div class="modal-backdrop" id="modalBackdrop">
+          <div class="modal">
+            <div class="modal-player">
+              <div class="pc-color" style="background:${player.color}"></div>
+              <h3>${escapeHtml(player.name)} — Tickets</h3>
+            </div>
+            <p class="modal-sub">
+              Add each destination ticket and toggle whether it was completed.
+              Completed tickets <strong style="color:var(--success)">add</strong> their points;
+              uncompleted tickets <strong style="color:#e08585">subtract</strong> them.
+            </p>
+
+            <div class="ticket-list" id="ticketList">
+              ${
+                player.tickets.length === 0
+                  ? `<div class="ticket-empty">No tickets yet. Add one below.</div>`
+                  : player.tickets
+                      .map((t, i) => renderTicketRow(t, i))
+                      .join("")
+              }
+            </div>
+
+            <button class="ticket-add-btn" id="addTicketBtn">+ Add ticket</button>
+
+            <div class="ticket-summary">
+              <span>Net ticket points</span>
+              <span class="ticket-net ${totalClass}">${totalLabel}</span>
+            </div>
+
+            <div class="modal-actions">
+              <button class="btn-primary" id="modalDone">Done</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("addTicketBtn").onclick = () => {
+        player.tickets.push({
+          id: cryptoId(),
+          points: 0,
+          completed: true,
+        });
+        saveState();
+        renderModal();
+        // Focus the new ticket's points input
+        const rows = document.querySelectorAll(".ticket-row");
+        const last = rows[rows.length - 1];
+        if (last) {
+          const input = last.querySelector('input[type="number"]');
+          if (input) {
+            input.focus();
+            input.select();
+          }
+        }
+      };
+
+      document.getElementById("modalDone").onclick = close;
+      document.getElementById("modalBackdrop").addEventListener("click", (e) => {
+        if (e.target.id === "modalBackdrop") close();
+      });
+
+      document.querySelectorAll(".ticket-row").forEach((row) => {
+        const ticketId = row.dataset.ticketId;
+        const ticket = player.tickets.find((t) => t.id === ticketId);
+        if (!ticket) return;
+
+        const pointsInput = row.querySelector('input[type="number"]');
+        pointsInput.addEventListener("input", (e) => {
+          const v = parseInt(e.target.value, 10);
+          ticket.points = Number.isFinite(v) && v >= 0 ? v : 0;
+          saveState();
+          updateTicketTotalDisplay(player);
+        });
+
+        const toggleLabel = row.querySelector(".ticket-toggle");
+        const toggleInput = toggleLabel.querySelector('input[type="checkbox"]');
+        toggleInput.addEventListener("change", (e) => {
+          ticket.completed = e.target.checked;
+          saveState();
+          toggleLabel.classList.toggle("completed", ticket.completed);
+          toggleLabel.classList.toggle("failed", !ticket.completed);
+          toggleLabel.querySelector(".ticket-toggle-label").textContent =
+            ticket.completed ? "✓ Completed" : "✗ Not completed";
+          updateTicketTotalDisplay(player);
+        });
+
+        row.querySelector(".ticket-delete").onclick = () => {
+          const idx = player.tickets.findIndex((t) => t.id === ticketId);
+          if (idx !== -1) {
+            player.tickets.splice(idx, 1);
+            saveState();
+            renderModal();
+          }
+        };
+      });
+    };
+
+    renderModal();
+
+    onKey = (e) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKey);
+  }
+
+  function renderTicketRow(t, index) {
+    const completed = !!t.completed;
+    return `
+      <div class="ticket-row" data-ticket-id="${t.id}">
+        <span class="ticket-num">${index + 1}</span>
+        <input type="number" min="0" max="999" value="${t.points}" inputmode="numeric" placeholder="0" />
+        <label class="ticket-toggle ${completed ? "completed" : "failed"}">
+          <input type="checkbox" ${completed ? "checked" : ""} />
+          <span class="ticket-toggle-label">${
+            completed ? "✓ Completed" : "✗ Not completed"
+          }</span>
+        </label>
+        <button class="ticket-delete" aria-label="Delete ticket">✕</button>
+      </div>
+    `;
+  }
+
+  function updateTicketTotalDisplay(player) {
+    const total = computeTicketTotal(player);
+    const el = document.querySelector(".ticket-summary .ticket-net");
+    if (!el) return;
+    el.textContent = `${total > 0 ? "+" : ""}${total} pts`;
+    el.classList.remove("positive", "negative", "zero");
+    el.classList.add(total > 0 ? "positive" : total < 0 ? "negative" : "zero");
+  }
+
+  // ---------- Actions ----------
+  function addTurn(playerId, carriages) {
+    const points = SCORE_TABLE[carriages];
+    if (points == null) return;
+    const turn = {
+      id: cryptoId(),
+      playerId,
+      carriages,
+      points,
+      ts: Date.now(),
+    };
+    state.history.push(turn);
+    saveState();
+    const player = state.players.find((p) => p.id === playerId);
+    showToast(`+${points} pts → ${player.name}`);
+    render();
+  }
+
+  function deleteTurn(turnId) {
+    const idx = state.history.findIndex((h) => h.id === turnId);
+    if (idx === -1) return;
+    state.history.splice(idx, 1);
+    saveState();
+    render();
+  }
+
+  function undoLastTurn() {
+    if (state.history.length === 0) return;
+    const last = state.history.pop();
+    const player = state.players.find((p) => p.id === last.playerId);
+    saveState();
+    showToast(`Undid ${player ? player.name : "last"} turn (−${last.points} pts)`);
+    render();
+  }
+
+  function toggleStation(playerId, slotIdx) {
+    const player = state.players.find((p) => p.id === playerId);
+    if (!player) return;
+    const current = player.stations || 0;
+    // Star-rating-style: tap the last filled slot to decrement, otherwise fill up to that slot
+    const next = slotIdx + 1 === current ? slotIdx : slotIdx + 1;
+    player.stations = Math.max(0, Math.min(MAX_STATIONS, next));
+    saveState();
+    render();
+  }
+
+  function setLongestRoad(playerId) {
+    state.longestRoadPlayerId = playerId || null;
+    saveState();
+    if (playerId) {
+      const p = state.players.find((pl) => pl.id === playerId);
+      if (p) showToast(`🛤️ Longest Road → ${p.name} (+${LONGEST_ROAD_BONUS})`);
+    } else {
+      showToast("Longest Road cleared");
+    }
+    render();
+  }
+
+  // ---------- Toast ----------
+  function showToast(msg) {
+    const el = document.createElement("div");
+    el.className = "toast";
+    el.textContent = msg;
+    toastRoot.appendChild(el);
+    setTimeout(() => el.remove(), 2400);
+  }
+
+  // ---------- Util ----------
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c]));
+  }
+
+  // ---------- Boot ----------
+  render();
+</script>
+</body>
+</html>
