@@ -895,6 +895,297 @@
     margin-left: auto;
   }
 
+  /* ---------- End Game button & confirm ---------- */
+  .btn-endgame {
+    background: linear-gradient(135deg, #d4a017, #ffd86b);
+    color: #1a1a1a;
+    border: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(212, 160, 23, 0.3);
+  }
+  .btn-endgame:hover {
+    background: linear-gradient(135deg, #e8b827, #ffe48a);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212, 160, 23, 0.4);
+  }
+
+  /* ---------- End Game celebration screen ---------- */
+  .endgame-overlay {
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at center top, rgba(212, 160, 23, 0.18), transparent 60%),
+      radial-gradient(circle at center bottom, rgba(74, 144, 226, 0.08), transparent 50%),
+      rgba(8, 12, 18, 0.92);
+    z-index: 1500;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .endgame-content {
+    position: relative;
+    z-index: 3;
+    max-width: 760px;
+    width: 100%;
+    text-align: center;
+    margin: auto 0;
+  }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -20px;
+    width: 10px;
+    height: 14px;
+    border-radius: 2px;
+    animation: confettiFall linear forwards;
+    will-change: transform, opacity;
+  }
+
+  @keyframes confettiFall {
+    0% {
+      transform: translate3d(0, -10vh, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(var(--drift, 0), 110vh, 0) rotate(var(--spin, 720deg));
+      opacity: 0.4;
+    }
+  }
+
+  /* Winner block */
+  .winner-block {
+    margin-bottom: 36px;
+    animation: winnerEnter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes winnerEnter {
+    0% { opacity: 0; transform: scale(0.4); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .trophy-icon {
+    font-size: 80px;
+    display: inline-block;
+    animation: trophyBounce 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 6px 24px rgba(255, 215, 0, 0.7));
+  }
+
+  @keyframes trophyBounce {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50%      { transform: translateY(-12px) rotate(6deg); }
+  }
+
+  .winner-label {
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    letter-spacing: 6px;
+    background: linear-gradient(90deg, #ffd86b, #d4a017, #ffd86b, #d4a017);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin: 12px 0 24px;
+    animation: shimmerText 3s linear infinite;
+  }
+
+  @keyframes shimmerText {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+
+  .winners-list {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .winner-card {
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    border: 2px solid var(--player-color, var(--accent));
+    border-radius: 18px;
+    padding: 24px 36px;
+    min-width: 220px;
+    position: relative;
+    animation: winnerGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes winnerGlow {
+    0%, 100% {
+      box-shadow:
+        0 0 50px rgba(212, 160, 23, 0.45),
+        0 0 0 1px var(--player-color, var(--accent)) inset;
+    }
+    50% {
+      box-shadow:
+        0 0 80px rgba(212, 160, 23, 0.75),
+        0 0 0 1px var(--player-color, var(--accent)) inset;
+    }
+  }
+
+  .winner-card .sparkle {
+    position: absolute;
+    font-size: 18px;
+    pointer-events: none;
+    animation: sparklePulse 1.4s ease-in-out infinite;
+  }
+  .winner-card .sparkle.s1 { top: -10px; left: -10px; animation-delay: 0s; }
+  .winner-card .sparkle.s2 { top: -10px; right: -10px; animation-delay: 0.4s; }
+  .winner-card .sparkle.s3 { bottom: -10px; left: -10px; animation-delay: 0.8s; }
+  .winner-card .sparkle.s4 { bottom: -10px; right: -10px; animation-delay: 1.2s; }
+
+  @keyframes sparklePulse {
+    0%, 100% { opacity: 0.3; transform: scale(0.8); }
+    50%      { opacity: 1;   transform: scale(1.3); }
+  }
+
+  .winner-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .winner-color-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--player-color);
+    flex-shrink: 0;
+  }
+
+  .winner-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .winner-score {
+    font-size: clamp(56px, 10vw, 80px);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #ffd86b, #d4a017);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin-bottom: 4px;
+  }
+
+  .winner-pts {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  /* Leaderboard */
+  .leaderboard-title {
+    margin: 24px 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .leaderboard {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-align: left;
+    box-shadow: var(--shadow);
+  }
+
+  .leaderboard-row {
+    display: grid;
+    grid-template-columns: 36px 14px 1fr auto 70px;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .leaderboard-row:last-child {
+    border-bottom: none;
+  }
+
+  .leaderboard-row.leader {
+    background: linear-gradient(90deg, rgba(212, 160, 23, 0.12), transparent 80%);
+  }
+
+  .lb-rank {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--muted);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .leaderboard-row.leader .lb-rank { color: var(--accent); }
+
+  .lb-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+  }
+
+  .lb-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lb-breakdown {
+    font-size: 11px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .lb-score {
+    font-weight: 700;
+    font-size: 20px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .leaderboard-row.leader .lb-score { color: var(--accent); }
+
+  .endgame-actions {
+    margin-top: 26px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 520px) {
+    .leaderboard-row {
+      grid-template-columns: 28px 12px 1fr 60px;
+      gap: 8px;
+      padding: 12px 14px;
+    }
+    .lb-breakdown { display: none; }
+    .winner-card { padding: 20px 24px; min-width: auto; }
+  }
+
   /* ---------- Toast ---------- */
   .toast {
     position: fixed;
@@ -1140,7 +1431,7 @@
     main.innerHTML = `
       <section class="panel setup">
         <h2>New Game</h2>
-        <p class="subtitle">Choose how many players (2–10) and customize names.</p>
+        <p class="subtitle">Choose how many players (2–5) and customize names.</p>
 
         <div class="player-count">
           <label>Players:</label>
@@ -1185,7 +1476,7 @@
       }
     };
     document.getElementById("incPlayers").onclick = () => {
-      if (state.players.length < 10) {
+      if (state.players.length < 5) {
         const i = state.players.length;
         state.players.push({
           id: cryptoId(),
@@ -1275,6 +1566,7 @@
         state.history.length === 0 ? "disabled" : ""
       }>↶ Undo</button>
       <button class="btn-ghost" id="editPlayersBtn">Edit Players</button>
+      <button class="btn-endgame" id="endGameBtn">🏁 End Game</button>
       <button class="btn-danger" id="newGameBtn">New Game</button>
     `;
 
@@ -1283,6 +1575,7 @@
       state.phase = "setup";
       render();
     };
+    document.getElementById("endGameBtn").onclick = confirmEndGame;
     document.getElementById("newGameBtn").onclick = () => {
       if (
         state.history.length === 0 ||
@@ -1720,6 +2013,183 @@
     el.textContent = `${total > 0 ? "+" : ""}${total} pts`;
     el.classList.remove("positive", "negative", "zero");
     el.classList.add(total > 0 ? "positive" : total < 0 ? "negative" : "zero");
+  }
+
+  // ---------- End Game ----------
+  function confirmEndGame() {
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop" id="endConfirmBackdrop">
+        <div class="modal" style="max-width: 440px">
+          <h3>🏁 End the game?</h3>
+          <p class="modal-sub">
+            This will reveal the final leaderboard and crown the winner.
+            Your scores stay saved — you can always come back and keep playing.
+          </p>
+          <div class="modal-actions">
+            <button id="cancelEndGame">Cancel</button>
+            <button class="btn-endgame" id="confirmEndGame">Yes, end game</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const close = () => {
+      modalRoot.innerHTML = "";
+      document.removeEventListener("keydown", onKey);
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") close();
+      else if (e.key === "Enter") {
+        document.getElementById("confirmEndGame").click();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+
+    document.getElementById("cancelEndGame").onclick = close;
+    document.getElementById("endConfirmBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "endConfirmBackdrop") close();
+    });
+    document.getElementById("confirmEndGame").onclick = () => {
+      close();
+      showEndGameResults();
+    };
+  }
+
+  function showEndGameResults() {
+    const ranked = state.players
+      .map((p) => ({ player: p, breakdown: getScoreBreakdown(p.id) }))
+      .sort((a, b) => b.breakdown.total - a.breakdown.total);
+
+    const topScore = ranked.length ? ranked[0].breakdown.total : 0;
+    const winners = ranked.filter((r) => r.breakdown.total === topScore);
+    const isMultipleWinners = winners.length > 1;
+
+    const winnerCards = winners
+      .map(
+        ({ player, breakdown }) => `
+        <div class="winner-card" style="--player-color:${player.color}">
+          <span class="sparkle s1">✨</span>
+          <span class="sparkle s2">✨</span>
+          <span class="sparkle s3">✨</span>
+          <span class="sparkle s4">✨</span>
+          <div class="winner-name-row">
+            <div class="winner-color-dot"></div>
+            <div class="winner-name">${escapeHtml(player.name)}</div>
+          </div>
+          <div class="winner-score">${breakdown.total}</div>
+          <div class="winner-pts">points</div>
+        </div>
+      `
+      )
+      .join("");
+
+    const leaderboardRows = ranked
+      .map(({ player, breakdown }, idx) => {
+        const parts = [];
+        if (breakdown.turns) parts.push(`Turns ${breakdown.turns}`);
+        if (breakdown.stations) parts.push(`Stations ${breakdown.stations}`);
+        if (breakdown.longestRoad) parts.push(`LR ${breakdown.longestRoad}`);
+        if (breakdown.tickets) {
+          parts.push(
+            `Tickets ${breakdown.tickets > 0 ? "+" : ""}${breakdown.tickets}`
+          );
+        }
+        const breakdownText = parts.join(" · ") || "—";
+        return `
+          <div class="leaderboard-row ${idx === 0 ? "leader" : ""}">
+            <div class="lb-rank">${idx + 1}</div>
+            <div class="lb-color" style="background:${player.color}"></div>
+            <div class="lb-name">${escapeHtml(player.name)}</div>
+            <div class="lb-breakdown">${breakdownText}</div>
+            <div class="lb-score">${breakdown.total}</div>
+          </div>
+        `;
+      })
+      .join("");
+
+    modalRoot.innerHTML = `
+      <div class="endgame-overlay" id="endgameOverlay">
+        <div class="confetti-container" id="confettiContainer"></div>
+        <div class="endgame-content">
+          <div class="winner-block">
+            <div class="trophy-icon">🏆</div>
+            <div class="winner-label">${
+              isMultipleWinners ? "WINNERS" : "WINNER"
+            }</div>
+            <div class="winners-list">${winnerCards}</div>
+          </div>
+
+          <div class="leaderboard-title">Final Leaderboard</div>
+          <div class="leaderboard">${leaderboardRows}</div>
+
+          <div class="endgame-actions">
+            <button id="backToGame">← Back to Game</button>
+            <button class="btn-endgame" id="newGameAfterEnd">🚂 Start New Game</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    generateConfetti();
+
+    const closeEndGame = () => {
+      modalRoot.innerHTML = "";
+      document.removeEventListener("keydown", onKey);
+    };
+
+    const onKey = (e) => {
+      if (e.key === "Escape") closeEndGame();
+    };
+    document.addEventListener("keydown", onKey);
+
+    document.getElementById("backToGame").onclick = closeEndGame;
+    document.getElementById("newGameAfterEnd").onclick = () => {
+      if (confirm("Start a new game? Current scores will be lost.")) {
+        closeEndGame();
+        resetState();
+      }
+    };
+  }
+
+  function generateConfetti() {
+    const container = document.getElementById("confettiContainer");
+    if (!container) return;
+    const colors = [
+      "#ffd86b",
+      "#d4a017",
+      "#e74c3c",
+      "#3498db",
+      "#27ae60",
+      "#9b59b6",
+      "#e67e22",
+      "#ec7ab8",
+      "#ffffff",
+    ];
+    const count = 100;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      const left = Math.random() * 100;
+      const drift = (Math.random() - 0.5) * 200;
+      const duration = 4 + Math.random() * 4;
+      const delay = Math.random() * 2.5;
+      const size = 6 + Math.random() * 8;
+      const spin = (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 720);
+      piece.style.left = left + "vw";
+      piece.style.background = colors[i % colors.length];
+      piece.style.width = size + "px";
+      piece.style.height = size * 1.4 + "px";
+      piece.style.setProperty("--drift", drift + "px");
+      piece.style.setProperty("--spin", spin + "deg");
+      piece.style.animationDuration = duration + "s";
+      piece.style.animationDelay = delay + "s";
+      container.appendChild(piece);
+    }
+    // Clean up after the longest possible animation finishes
+    setTimeout(() => {
+      if (container && container.parentNode) container.innerHTML = "";
+    }, 9000);
   }
 
   // ---------- Actions ----------

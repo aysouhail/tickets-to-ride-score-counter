@@ -6,12 +6,13 @@ A simple, beautiful, **single-file** web app to track scores while playing the b
 
 ## Features
 
-- **2 to 10 players** — adjustable on the setup screen with a stepper
+- **2 to 5 players** — adjustable on the setup screen with a stepper
 - **Per-player customization** — name and color (10 colors available)
 - **One-tap turn entry** — click a player card, choose how many carriages (1–8), confirm
 - **Stations** — toggle up to **3 stations per player**, each worth **+4 points**
 - **Longest Road bonus** — dropdown to assign **+10 points** to one player (clearable)
 - **Destination Tickets** — at the end of the game, add each player's tickets with custom point values; completed tickets **add** points, uncompleted ones **subtract**
+- **End Game celebration** — dedicated "End Game" button (with confirmation) that reveals the final leaderboard and crowns the winner with confetti, glowing winner card, and a shimmering trophy
 - **Live ranking** — the leader is automatically highlighted with a 🏆 badge
 - **Turn history** — full chronological log; delete individual turns or undo the last one
 - **Auto-save** — game state persists in `localStorage`, survives refresh / closing the tab
